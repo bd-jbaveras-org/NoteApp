@@ -30,7 +30,7 @@ app.get('/api/notes/:id', (req, res) => {
 
 // POST create new note
 app.post('/api/notes', (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, assignedTo } = req.body;
   
   if (!title || !content) {
     return res.status(400).json({ error: 'Title and content are required' });
@@ -40,6 +40,7 @@ app.post('/api/notes', (req, res) => {
     id: nextId++,
     title,
     content,
+    assignedTo: assignedTo || '',
     createdAt: new Date().toISOString()
   };
 
@@ -49,7 +50,7 @@ app.post('/api/notes', (req, res) => {
 
 // PUT update existing note
 app.put('/api/notes/:id', (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, assignedTo } = req.body;
   const noteIndex = notes.findIndex(n => n.id === parseInt(req.params.id));
 
   if (noteIndex === -1) {
@@ -63,7 +64,8 @@ app.put('/api/notes/:id', (req, res) => {
   notes[noteIndex] = {
     ...notes[noteIndex],
     title,
-    content
+    content,
+    assignedTo: assignedTo || ''
   };
 
   res.json(notes[noteIndex]);

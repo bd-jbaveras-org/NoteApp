@@ -188,6 +188,20 @@ textarea {
     white-space: pre-wrap;
 }
 
+.note-assigned {
+    font-size: 0.9rem;
+    color: #667eea;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+    background: #f0f3ff;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.note-assigned strong {
+    color: #5568d3;
+}
+
 .note-date {
     font-size: 0.85rem;
     color: #999;

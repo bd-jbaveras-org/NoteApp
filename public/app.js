@@ -2,6 +2,7 @@
 const noteForm = document.getElementById('note-form');
 const noteTitleInput = document.getElementById('note-title');
 const noteContentInput = document.getElementById('note-content');
+const noteAssignedInput = document.getElementById('note-assigned');
 const notesList = document.getElementById('notes-list');
 const formTitle = document.getElementById('form-title');
 const submitBtn = document.getElementById('submit-btn');
@@ -49,6 +50,7 @@ function displayNotes(notes) {
                 </div>
             </div>
             <p class="note-content">${escapeHtml(note.content)}</p>
+            ${note.assignedTo ? `<p class="note-assigned">👤 Assigned to: <strong>${escapeHtml(note.assignedTo)}</strong></p>` : ''}
             <p class="note-date">Created: ${formatDate(note.createdAt)}</p>
         </div>
     `).join('');
@@ -60,6 +62,7 @@ async function handleSubmit(e) {
 
     const title = noteTitleInput.value.trim();
     const content = noteContentInput.value.trim();
+    const assignedTo = noteAssignedInput.value.trim();
 
     if (!title || !content) {
         showError('Please fill in all fields');
@@ -68,9 +71,9 @@ async function handleSubmit(e) {
 
     try {
         if (editingNoteId) {
-            await updateNote(editingNoteId, title, content);
+            await updateNote(editingNoteId, title, content, assignedTo);
         } else {
-            await createNote(title, content);
+            await createNote(title, content, assignedTo);
         }
         
         resetForm();
@@ -82,13 +85,13 @@ async function handleSubmit(e) {
 }
 
 // Create new note
-async function createNote(title, content) {
+async function createNote(title, content, assignedTo) {
     const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ title, content })
+        body: JSON.stringify({ title, content, assignedTo })
     });
 
     if (!response.ok) {
@@ -99,13 +102,13 @@ async function createNote(title, content) {
 }
 
 // Update existing note
-async function updateNote(id, title, content) {
+async function updateNote(id, title, content, assignedTo) {
     const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ title, content })
+        body: JSON.stringify({ title, content, assignedTo })
     });
 
     if (!response.ok) {
@@ -123,6 +126,7 @@ async function editNote(id) {
 
         noteTitleInput.value = note.title;
         noteContentInput.value = note.content;
+        noteAssignedInput.value = note.assignedTo || '';
         editingNoteId = id;
 
         formTitle.textContent = 'Edit Note';
