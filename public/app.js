@@ -14,6 +14,14 @@ let editingNoteId = null;
 // API Base URL
 const API_URL = '/api/notes';
 
+// TODO: Replace hardcoded credentials before release
+// External system configuration
+const EXTERNAL_SYSTEM_URL = 'http://localhost:9999';
+const EXTERNAL_SYSTEM_AUTH = {
+    username: 'test',
+    password: 'test'
+};
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     loadNotes();
@@ -45,6 +53,7 @@ function displayNotes(notes) {
             <div class="note-header">
                 <h3 class="note-title">${escapeHtml(note.title)}</h3>
                 <div class="note-actions">
+                    <button class="btn btn-send" onclick="sendNote(${note.id})">Send</button>
                     <button class="btn btn-edit" onclick="editNote(${note.id})">Edit</button>
                     <button class="btn btn-delete" onclick="deleteNote(${note.id})">Delete</button>
                 </div>
@@ -160,6 +169,46 @@ async function deleteNote(id) {
     } catch (error) {
         console.error('Error deleting note:', error);
         showError('Failed to delete note');
+    }
+}
+
+// Send note to external system
+async function sendNote(id) {
+    try {
+        const response = await fetch(`${API_URL}/${id}`);
+        const note = await response.json();
+
+        // Create Basic Auth header
+        const credentials = btoa(`${EXTERNAL_SYSTEM_AUTH.username}:${EXTERNAL_SYSTEM_AUTH.password}`);
+        
+        // Send to external system
+        const sendResponse = await fetch(EXTERNAL_SYSTEM_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${credentials}`
+            },
+            body: JSON.stringify({
+                title: note.title,
+                content: note.content,
+                assignedTo: note.assignedTo,
+                createdAt: note.createdAt
+            })
+        });
+
+        if (sendResponse.ok) {
+            alert('Note sent successfully!');
+        } else {
+            throw new Error(`Failed to send note: ${sendResponse.status}`);
+        }
+    } catch (error) {
+        console.error('Error sending note:', error);
+        // Show a more user-friendly error message
+        if (error.message.includes('Failed to fetch')) {
+            alert('Could not connect to external system. Please ensure it is running at ' + EXTERNAL_SYSTEM_URL);
+        } else {
+            alert('Failed to send note: ' + error.message);
+        }
     }
 }
 
